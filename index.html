@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DEMO Login (Training / Local Only)</title>
+  <style>
+    :root{font-family:Inter,system-ui,Segoe UI,Arial;margin:0}
+    body{display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f3f6fb;padding:24px}
+    .card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 10px 30px rgba(20,30,60,0.08);width:360px}
+    h1{font-size:20px;margin:0 0 6px}
+    p.sub{color:#55606a;margin:0 0 18px;font-size:13px}
+    label{display:block;font-size:13px;margin:12px 0 6px;color:#333}
+    input[type="text"], input[type="email"], input[type="tel"], input[type="password"]{
+      width:100%;padding:10px 12px;border:1px solid #d7dee9;border-radius:8px;font-size:14px
+    }
+    .row{display:flex;gap:8px}
+    .btn{width:100%;padding:10px;border-radius:10px;border:0;font-weight:600;cursor:pointer;background:#0b63d4;color:#fff;margin-top:16px}
+    .demo-banner{background:#fff3cd;color:#664d03;border:1px solid #ffecb5;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
+    .output{margin-top:14px;padding:12px;background:#f8fafc;border:1px dashed #c7d2e8;border-radius:8px;font-size:13px;white-space:pre-wrap}
+    small{color:#6b7280}
+  </style>
+</head>
+<body>
+  <form class="card" id="demoForm" autocomplete="on" onsubmit="return demoSubmit(event)">
+    <div class="demo-banner"><strong>DEMO / TRAINING PAGE — Do NOT enter real credentials.</strong><br>This page runs locally and does not send data anywhere.</div>
+    <h1>Account sign in</h1>
+    <p class="sub">This is an educational demo of form fields & browser autofill (local only).</p>
+
+    <label for="name">Full name</label>
+    <input id="name" name="name" type="text" autocomplete="name" placeholder="John Doe" required>
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+    <label for="phone">Phone</label>
+    <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+966 5X XXX XXXX">
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter password" required>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+        <input type="checkbox" id="remember" name="remember" autocomplete="off">
+        <span>Remember me</span>
+      </label>
+      <small>Local demo — no network.</small>
+    </div>
+
+    <button class="btn" type="submit">Sign in (Demo)</button>
+
+    <div id="result" class="output" aria-live="polite" style="display:none"></div>
+  </form>
+
+  <script>
+    function demoSubmit(e) {
+      e.preventDefault(); // IMPORTANT: no network submission
+      // Read form values (only for local display) — we do NOT send them anywhere.
+      const form = e.target;
+      const data = {
+        name: form.name.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        password: form.password.value ? '•'.repeat(form.password.value.length) : ''
+      };
+
+      const out = document.getElementById('result');
+      out.style.display = 'block';
+      out.innerText =
+        'This is a LOCAL DEMO / TRAINING page. Data is not transmitted.\n\n' +
+        `Full name: ${data.name}\n` +
+        `Email: ${data.email}\n` +
+        `Phone: ${data.phone}\n` +
+        `Password (masked): ${data.password}\n\n` +
+        'Tip: To test browser autofill, add a profile/credential in your browser settings and reload this page.';
+      // Visually highlight the banner so testers know it's a demo
+      out.scrollIntoView({behavior:'smooth'});
+      return false;
+    }
+  </script>
+</body>
+</html>
