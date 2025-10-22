@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>My Image</title>
+  <title>My Image — Matrix Rain</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     html,body{height:100%;margin:0;background:#000;overflow:hidden}
@@ -10,94 +10,128 @@
     /* full-bleed image */
     .bg-image{
       position:absolute;inset:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;
-      z-index:1;pointer-events:none;
+      z-index:0;pointer-events:none;
     }
-    .bg-image img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+    .bg-image img{width:100%;height:100%;object-fit:cover;display:block;opacity:0.9}
     /* canvas overlay for falling numbers */
     #matrixCanvas{
-      position:absolute;left:0;top:0;width:100vw;height:100vh;z-index:2;mix-blend-mode:screen;pointer-events:none;
+      position:absolute;left:0;top:0;width:100vw;height:100vh;z-index:2;pointer-events:none;
+      /* keep normal blend so green appears solid over black-ish image */
+      mix-blend-mode:normal;
     }
-    /* subtle overlay to darken the image beneath for readability */
-    .overlay{
-      position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:1.5;pointer-events:none;
+    /* subtle dark overlay to increase contrast between image and green digits */
+    .darken{
+      position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:1;pointer-events:none;
+    }
+
+    /* optional watermark so it's clear this is demo/training (remove if not needed) */
+    .watermark{
+      position:fixed;right:12px;bottom:12px;color:#0f0;opacity:0.18;font-family:monospace;font-size:12px;z-index:3;pointer-events:none;
+      letter-spacing:2px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="bg-image">
-      <!-- replace this src with your actual image file name in the same folder -->
+      <!-- Replace with your actual image file name in same folder -->
       <img src="image_imgupscaler.ai_General_4K.jpg" alt="My Image">
     </div>
 
-    <div class="overlay"></div>
+    <div class="darken"></div>
 
-    <canvas id="matrixCanvas" width="1920" height="1080"></canvas>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="watermark">TRAINING • DEMO</div>
   </div>
 
   <script>
-    // Matrix rain canvas
     (function() {
       const canvas = document.getElementById('matrixCanvas');
       const ctx = canvas.getContext('2d');
 
-      function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      // handle high DPI screens for crisp text
+      function setSize() {
+        const ratio = window.devicePixelRatio || 1;
+        const w = Math.max(300, window.innerWidth);
+        const h = Math.max(200, window.innerHeight);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        canvas.width = Math.floor(w * ratio);
+        canvas.height = Math.floor(h * ratio);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0); // scale drawing operations
         initDrops();
       }
-      window.addEventListener('resize', resize, false);
-      resize();
+      window.addEventListener('resize', setSize);
+      setSize();
 
-      // characters to use — numeric 0/1 and some katakana-like symbols for visual effect
-      const chars = '01';
-      let fontSize = 16;
-      let columns;
+      // chars and settings
+      const chars = '01'; // only 0 and 1
+      let fontSize = 14;      // will be adjusted in initDrops()
+      let columns = 0;
       let drops = [];
 
-      function initDrops(){
-        fontSize = Math.max(12, Math.floor(window.innerWidth / 120)); // scale with width
-        columns = Math.floor(canvas.width / fontSize);
-        drops = [];
-        for (let x = 0; x < columns; x++) {
-          drops[x] = Math.floor(Math.random() * canvas.height / fontSize);
+      function initDrops() {
+        // smaller font for denser columns on wide screens
+        const base = Math.max(10, Math.floor(window.innerWidth / 140));
+        fontSize = base; // px
+        columns = Math.floor(window.innerWidth / fontSize) + 1;
+        drops = new Array(columns);
+        for (let i = 0; i < columns; i++) {
+          // start each drop at random vertical position (so not all start at top)
+          drops[i] = Math.floor(Math.random() * (window.innerHeight / fontSize));
         }
+        ctx.font = `${fontSize}px monospace`;
+        ctx.textBaseline = 'top';
       }
 
-      // draw function
+      // animation parameters (tweak these to taste)
+      const trailAlpha = 0.06;     // lower -> longer trails; higher -> faster fade
+      const speedMultiplier = 1.0; // increase for faster fall
+      const headChance = 0.06;     // chance to draw a brighter head
+
       function draw() {
-        // translucent black background to create trail effect
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        // paint translucent black to create trailing effect
+        ctx.fillStyle = `rgba(0, 0, 0, ${trailAlpha})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.font = fontSize + "px monospace";
+        // draw characters
         for (let i = 0; i < drops.length; i++) {
-          const text = chars.charAt(Math.floor(Math.random() * chars.length));
           const x = i * fontSize;
           const y = drops[i] * fontSize;
+          const char = chars.charAt(Math.floor(Math.random() * chars.length));
 
-          // green glow for the leading character
-          ctx.fillStyle = 'rgba(140, 255, 140, 0.9)';
-          ctx.fillText(text, x, y);
-
-          // lighter head occasionally
-          if (Math.random() > 0.975) {
-            ctx.fillStyle = 'rgba(200, 255, 200, 0.9)';
-            ctx.fillText(text, x, y - fontSize);
+          // draw the head (bright green)
+          if (Math.random() < headChance) {
+            // bright head
+            ctx.fillStyle = 'rgba(180, 255, 180, 1)';
+            ctx.fillText(char, x, y);
+            // small glow for head using shadow
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,255,70,0.55)';
+            ctx.shadowBlur = Math.max(6, fontSize * 0.9);
+            ctx.fillStyle = 'rgba(120, 255, 120, 0.9)';
+            ctx.fillText(char, x, y);
+            ctx.restore();
+          } else {
+            // normal green for body characters
+            ctx.fillStyle = 'rgba(0, 190, 70, 0.9)';
+            ctx.fillText(char, x, y);
           }
 
-          // reset drop
-          if (y > canvas.height && Math.random() > 0.975) {
+          // randomly reset drop to top after it passes bottom (gives sparse column resets)
+          if (y > window.innerHeight && Math.random() > 0.975) {
             drops[i] = 0;
           }
-          drops[i]++;
+          drops[i] += Math.random() * speedMultiplier + 0.5; // add variability in fall speed
         }
+
         requestAnimationFrame(draw);
       }
 
-      // Initial setup
+      // initialize and start
       initDrops();
-      draw();
+      requestAnimationFrame(draw);
     })();
   </script>
 </body>
