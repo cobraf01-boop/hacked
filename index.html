@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title></title>
+  <title>Sign In</title>
   <style>
     :root{font-family:Inter,system-ui,Segoe UI,Arial;margin:0}
     body{display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f3f6fb;padding:24px}
@@ -16,18 +16,14 @@
     }
     .row{display:flex;gap:8px}
     .btn{width:100%;padding:10px;border-radius:10px;border:0;font-weight:600;cursor:pointer;background:#0b63d4;color:#fff;margin-top:16px}
-    /* Prominent demo banner - must remain visible for safety/ethics */
-    .demo-banner{background:#ffecf2;color:#5b1632;border:2px solid #ffd6e6;padding:12px;border-radius:8px;margin-bottom:12px;font-size:14px;font-weight:700;text-align:center}
-    .output{margin-top:14px;padding:12px;background:#f8fafc;border:1px dashed #c7d2e8;border-radius:8px;font-size:13px;white-space:pre-wrap}
     small{color:#6b7280}
   </style>
 </head>
 <body>
   <form class="card" id="demoForm" autocomplete="on" onsubmit="return demoSubmit(event)">
-    
 
     <h1>Account sign in</h1>
-    <p class="sub">Educational demo of form fields & browser autofill.</p>
+    <p class="sub">Please sign in to view the data.</p>
 
     <label for="name">Full name</label>
     <input id="name" name="name" type="text" autocomplete="name" placeholder="John Doe" required>
@@ -51,30 +47,16 @@
 
     <button class="btn" type="submit">Sign in </button>
 
-    <div id="result" class="output" aria-live="polite" style="display:none"></div>
   </form>
 
   <script>
     // IMPORTANT: This demo does NOT transmit data anywhere.
     function demoSubmit(e) {
       e.preventDefault(); // prevent network submission
-      const form = e.target;
-      // For transparency show masked result locally
-      const resultEl = document.getElementById('result');
-      const masked = form.password.value ? '•'.repeat(form.password.value.length) : '';
-      resultEl.style.display = 'block';
-      resultEl.innerText =
-        '' +
-        `Full name: ${form.name.value}\n` +
-        `Email: ${form.email.value}\n` +
-        `Phone: ${form.phone.value}\n` +
-        `Password (masked): ${masked}\n\n` +
-        '';
-      // short delay so the tester sees the demo message, then redirect
+      // Redirect locally to your image page (must be in same folder)
       setTimeout(() => {
-        // Redirect locally to your image page (must be in same folder)
         window.location.href = 'image_page.html';
-      }, 900); // 900ms so people notice the demo output
+      }, 900);
       return false;
     }
   </script>
